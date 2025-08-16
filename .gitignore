@@ -1,0 +1,113 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+chatbotenv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# API Keys and Secrets
+api_keys.txt
+*.key
+secrets.json
+config/secrets.py
+
+# Database
+*.db
+*.sqlite3
+*.sql.backup
+database.db
+
+# Vector Database and AI Models
+vector_db/
+*/vector_db/
+*.faiss
+*.pkl
+*.bin
+*.safetensors
+models/
+checkpoints/
+
+# File Uploads
+uploads/
+*/uploads/
+temp/
+tmp/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.metadata
+.classpath
+.settings/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Node.js (if using any frontend tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
