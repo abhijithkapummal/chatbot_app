@@ -27,3 +27,6 @@ class Config:
 
     # Vector Database Configuration
     VECTOR_DB_PATH = 'vector_db'
+
+    # Request timeout configuration
+    REQUEST_TIMEOUT = 600  # 10 minutes for long-running operations

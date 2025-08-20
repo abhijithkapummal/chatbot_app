@@ -154,6 +154,40 @@ def show_admin_dashboard():
     # File Upload Section
     st.header("📁 File Upload & Processing")
 
+    # Model initialization section for txt files
+    st.subheader("🤖 AI Model Status")
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        st.info("For TXT file uploads, the AI model needs to be initialized first. This is a one-time process that may take a few minutes.")
+
+    with col2:
+        if st.button("Initialize AI Model"):
+            with st.spinner("Initializing AI model... This may take a few minutes on first run."):
+                try:
+                    headers = {"Authorization": f"Bearer {st.session_state.token}"}
+                    response = requests.post(
+                        f"{BACKEND_URL}/admin/init-model",
+                        headers=headers,
+                        timeout=600  # 10 minutes timeout for model initialization
+                    )
+
+                    if response.status_code == 200:
+                        result = response.json()
+                        if result.get('success'):
+                            st.success("✅ AI model initialized successfully!")
+                        else:
+                            st.warning(f"⚠️ {result.get('message', 'Model initialization completed with warnings')}")
+                    else:
+                        st.error(f"❌ Model initialization failed: {response.json().get('message', 'Unknown error')}")
+
+                except requests.exceptions.Timeout:
+                    st.error("⏱️ Model initialization timed out. The process may still be running in the background.")
+                except Exception as e:
+                    st.error(f"❌ Error initializing model: {str(e)}")
+
+    st.markdown("---")
+
     uploaded_file = st.file_uploader(
         "Choose a file to upload",
         type=['csv', 'txt'],
@@ -176,21 +210,36 @@ def show_admin_dashboard():
                     files = {"file": uploaded_file.getvalue()}
                     headers = {"Authorization": f"Bearer {st.session_state.token}"}
 
+                    # Set longer timeout for file processing (especially for txt files that need model download)
+                    timeout_seconds = 600  # 10 minutes timeout
+
                     response = requests.post(
                         f"{BACKEND_URL}/admin/upload",
                         files={"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)},
-                        headers=headers
+                        headers=headers,
+                        timeout=timeout_seconds
                     )
-                    print(response.json())
+
                     if response.status_code == 200:
                         result = response.json()
                         st.success("File processed successfully!")
                         st.json(result)
                     else:
-                        st.error(f"Processing failed: {response.json().get('message', 'Unknown error')}")
+                        error_msg = "Unknown error"
+                        try:
+                            error_msg = response.json().get('message', 'Unknown error')
+                        except:
+                            error_msg = f"HTTP {response.status_code}: {response.text}"
+                        st.error(f"Processing failed: {error_msg}")
 
+                except requests.exceptions.Timeout:
+                    st.error("Request timed out. File processing is taking longer than expected. This may happen on first upload of txt files as the system downloads required models. Please try again in a few minutes.")
+                except requests.exceptions.ConnectionError as e:
+                    st.error(f"Connection error: {str(e)}. Please check if the backend server is running and try again.")
+                except requests.exceptions.RequestException as e:
+                    st.error(f"Request error: {str(e)}")
                 except Exception as e:
-                    st.error(f"Error: {str(e)}")
+                    st.error(f"Unexpected error: {str(e)}")
 
     # Database Management Section
     st.markdown("---")

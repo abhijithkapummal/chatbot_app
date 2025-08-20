@@ -123,3 +123,31 @@ def get_vector_info():
 
     except Exception as e:
         return jsonify({"message": f"Error: {str(e)}"}), 500
+
+@admin_bp.route('/init-model', methods=['POST'])
+@jwt_required()
+def initialize_model():
+    """Initialize the vector model to avoid timeout on first txt upload"""
+    try:
+        user_id = get_jwt_identity()
+        claims = get_jwt()
+        if claims.get('user_type') != 'admin':
+            return jsonify({"message": "Admin access required"}), 403
+
+        print("Initializing vector model...")
+        vector_service = VectorService()
+
+        if vector_service.model_available:
+            return jsonify({
+                "success": True,
+                "message": "Vector model is already initialized and ready"
+            }), 200
+        else:
+            return jsonify({
+                "success": False,
+                "message": "Vector model initialization failed. Check server logs for details."
+            }), 500
+
+    except Exception as e:
+        print(f"Model initialization error: {str(e)}")
+        return jsonify({"message": f"Error initializing model: {str(e)}"}), 500

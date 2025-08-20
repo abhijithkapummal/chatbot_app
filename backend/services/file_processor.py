@@ -18,14 +18,18 @@ class FileProcessor:
 
     def process_txt(self, file_path, filename):
         try:
+            print(f"Starting to process TXT file: {filename}")
+
             # Read text file with multiple encoding attempts
             content = None
             encodings = ['utf-8', 'utf-8-sig', 'latin-1', 'cp1252']
 
+            print("Reading file content...")
             for encoding in encodings:
                 try:
                     with open(file_path, 'r', encoding=encoding) as file:
                         content = file.read()
+                    print(f"Successfully read file with {encoding} encoding")
                     break
                 except UnicodeDecodeError:
                     continue
@@ -45,28 +49,39 @@ class FileProcessor:
 
             # Get file metadata
             file_size = os.path.getsize(file_path)
+            print(f"File size: {file_size} bytes, content length: {len(content)} characters")
 
             # Store in vector database
-            success = self.vector_service.add_document(
-                content=content,
-                metadata={
-                    "filename": filename,
-                    "file_size": file_size,
-                    "upload_date": str(pd.Timestamp.now())
+            print("Storing content in vector database...")
+            try:
+                success = self.vector_service.add_document(
+                    content=content,
+                    metadata={
+                        "filename": filename,
+                        "file_size": file_size,
+                        "upload_date": str(pd.Timestamp.now())
+                    }
+                )
+            except Exception as vector_error:
+                print(f"Vector service error: {vector_error}")
+                return {
+                    "success": False,
+                    "message": f"Error with vector database: {str(vector_error)}. This may occur on first run while downloading the AI model. Please try again in a few minutes."
                 }
-            )
 
             if not success:
                 return {
                     "success": False,
-                    "message": "Failed to store content in vector database."
+                    "message": "Failed to store content in vector database. The AI model may still be initializing. Please try again in a few minutes."
                 }
 
+            print("Text file processed successfully")
             return {
                 "success": True,
                 "message": f"Text file processed successfully. Content stored in vector database.",
                 "filename": filename,
-                "content_length": len(content)
+                "content_length": len(content),
+                "file_size": file_size
             }
 
         except FileNotFoundError:
@@ -80,6 +95,7 @@ class FileProcessor:
                 "message": "Permission denied when reading file."
             }
         except Exception as e:
+            print(f"Unexpected error in process_txt: {str(e)}")
             return {
                 "success": False,
                 "message": f"Error processing TXT: {str(e)}"

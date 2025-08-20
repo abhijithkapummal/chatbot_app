@@ -6,9 +6,12 @@ from sentence_transformers import SentenceTransformer
 from config import Config
 
 class VectorService:
+    # Class-level model instance to avoid re-downloading
+    _shared_model = None
+    _model_initialized = False
+    _model_available = False
+
     def __init__(self):
-        self.model = None
-        self.model_available = False
         self.dimension = 384  # Dimension of all-MiniLM-L6-v2
         self.index_path = os.path.join(Config.VECTOR_DB_PATH, 'faiss_index')
         self.metadata_path = os.path.join(Config.VECTOR_DB_PATH, 'metadata.pkl')
@@ -20,19 +23,34 @@ class VectorService:
         self.index = self._load_or_create_index()
         self.metadata = self._load_metadata()
 
-        # Try to initialize the model, but don't fail if it doesn't work
-        self._init_model()
+        # Use shared model instance
+        if not VectorService._model_initialized:
+            self._init_model()
+
+        self.model = VectorService._shared_model
+        self.model_available = VectorService._model_available
 
     def _init_model(self):
         try:
-            print("Initializing SentenceTransformer model...")
-            self.model = SentenceTransformer('all-MiniLM-L6-v2')
-            self.model_available = True
+            print("Initializing SentenceTransformer model (this may take a few minutes on first run)...")
+            # Set a longer timeout for model download
+            import socket
+            original_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(300)  # 5 minutes timeout for model download
+
+            VectorService._shared_model = SentenceTransformer('all-MiniLM-L6-v2')
+            VectorService._model_available = True
+            VectorService._model_initialized = True
+
+            # Restore original timeout
+            socket.setdefaulttimeout(original_timeout)
+
             print("SentenceTransformer model initialized successfully")
         except Exception as e:
             print(f"Warning: Could not initialize SentenceTransformer model: {e}")
             print("Vector search will not be available")
-            self.model_available = False
+            VectorService._model_available = False
+            VectorService._model_initialized = True  # Mark as initialized even if failed
 
     def _load_or_create_index(self):
         if os.path.exists(self.index_path):
