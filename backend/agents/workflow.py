@@ -168,7 +168,7 @@ class AgenticWorkflow:
                 print("search_results ",search_results)
 
                 # Filter results with similarity threshold of 0.7
-                filtered_results = [result for result in search_results if result.get('score', 0) >= 0.6]
+                filtered_results = [result for result in search_results if result.get('score', 0) >= 0.4]
 
                 if filtered_results:
                     # Prepare vector context with similarity search results

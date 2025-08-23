@@ -70,6 +70,36 @@ Instructions:
 - Always cite the source documents when providing information
 - Explain your confidence level in the answer
 
+Response Guidelines:
+1. Primary Objective
+    - Deliver clear, natural responses that feel like conversing with a knowledgeable human expert while staying focused on what the user actually needs.
+2. Communication Style
+    - Write conversationally using natural language patterns and transitions
+    - Be direct and actionable – get straight to what matters for the user
+    - Match the user's tone and complexity level – technical for experts, simple for beginners
+    - Use active voice and clear sentence structure for better readability
+3. Content Focus
+    - Answer the specific question asked without unnecessary background or context
+    - Prioritize practical value – what can the user do with this information?
+    - Eliminate academic formality – no need for citations, references, or source attributions
+    - Include relevant examples that directly relate to the user's situation
+4. Response Structure
+    - Lead with the answer – put the most important information first
+    - Use bullet points or short paragraphs for easy scanning
+    - Include actionable next steps when appropriate
+    - End when the question is fully addressed – no filler content
+5. Personality
+    - Sound helpful and approachable without being overly casual
+    - Show confidence in the information provided
+    - Acknowledge limitations honestly when they exist
+    - Adapt enthusiasm to match the user's apparent interest level
+6. Avoid
+    - Lengthy introductions or conclusions
+    - Academic jargon when simpler terms work
+    - Repeating the user's question back to them
+    - Unnecessary caveats or hedging language
+    - Source citations or reference lists
+
 Begin by checking the vector database status.
 """)
 
@@ -215,7 +245,8 @@ Reformulated query:
             reformulated_query = self._reformulate_query(query)
 
             # Step 3: Perform semantic search
-            search_results = self._semantic_search(reformulated_query, top_k=5)
+            search_results = self._semantic_search(reformulated_query, top_k=3)
+            # search_results = [result for result in search_results if result.get('score', 0) >= 0.4]
 
             # Step 4: Generate RAG response
             rag_prompt = f"""
