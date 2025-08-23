@@ -119,25 +119,39 @@ class AgenticWorkflow:
         # Get database information
         try:
             if db.is_connected():
-                # Get table names
-                tables_query = """
-                SELECT table_name,
-                       (SELECT COUNT(*) FROM information_schema.columns
-                        WHERE table_name = t.table_name AND table_schema = 'public') as column_count
-                FROM information_schema.tables t
-                WHERE table_schema = 'public'
-                ORDER BY table_name;
-                """
-                tables = db.execute_query(tables_query, fetch=True)
-                if tables:
-                    context["db_tables"] = {
-                        table['table_name']: f"{table['column_count']} columns"
-                        for table in tables
-                    }
-                else:
-                    context["db_tables"] = "No tables found"
+               # Get table names and columns
+               tables_query = """
+               SELECT
+                   t.table_name,
+                   c.column_name,
+                   c.data_type
+               FROM
+                   information_schema.tables t
+               JOIN
+                   information_schema.columns c
+                   ON c.table_name = t.table_name
+                   AND c.table_schema = t.table_schema
+               WHERE
+                   t.table_schema = 'public'
+               ORDER BY
+                   t.table_name, c.ordinal_position;
+               """
+               tables = db.execute_query(tables_query, fetch=True)
+               if tables:
+                   db_tables = {}
+                   for row in tables:
+                       table = row['table_name']
+                       column = row['column_name']
+                       dtype = row['data_type']
+                       if table not in db_tables:
+                           db_tables[table] = []
+                       db_tables[table].append({'column_name': column, 'data_type': dtype})
+                   context["db_tables"] = db_tables
+               else:
+                   context["db_tables"] = "No tables found"
             else:
-                context["db_tables"] = "Database not connected"
+               context["db_tables"] = "Database not connected"
+
         except Exception as e:
             context["db_tables"] = f"Database error: {str(e)}"
 
@@ -156,6 +170,7 @@ class AgenticWorkflow:
         try:
             query = state["query"]
             context = state["context"]
+            print(f"Supervisor node context: {context}")
 
             print(f"Supervisor processing query: {query}")
 

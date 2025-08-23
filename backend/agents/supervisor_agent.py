@@ -41,7 +41,7 @@ Available agents and their capabilities:
 
 Context about available data sources:
 - Database tables: {db_tables}
-- Vector database status: {vector_db_status}
+- Vector database similar content: {vector_db_status}
 
 User Query: "{query}"
 
