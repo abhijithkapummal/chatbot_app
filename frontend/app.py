@@ -294,8 +294,10 @@ def show_user_dashboard():
 
     # Chat input
     if prompt := st.chat_input("What would you like to know?"):
+        print(prompt)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
+        print(st.session_state.messages)
         with st.chat_message("user"):
             st.markdown(prompt)
 

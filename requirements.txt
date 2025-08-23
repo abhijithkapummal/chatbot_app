@@ -12,7 +12,7 @@ psycopg2-binary==2.9.7
 pandas==2.1.4
 
 # AI/ML Libraries
-groq==0.4.1
+groq==0.31.0
 sentence-transformers==2.7.0
 transformers>=4.34.0
 torch>=2.0.1
@@ -26,3 +26,15 @@ numpy==1.24.3
 
 # File Processing
 openpyxl==3.1.2
+
+# LangChain and LangGraph
+langchain>=0.1.20
+langchain-core>=0.1.53
+langchain-community>=0.0.38
+langgraph>=0.0.51
+langchain-groq>=0.1.5
+langchain-experimental>=0.0.58
+
+# Additional tools for agents
+psycopg2-binary==2.9.7  # Already included but needed for langchain-postgres
+pydantic>=2.5.0,<3.0.0

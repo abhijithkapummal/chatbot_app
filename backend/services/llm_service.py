@@ -12,7 +12,7 @@ class LLMService:
                 del os.environ[var]
 
         self.client = None
-        self.model = "mixtral-8x7b-32768"
+        self.model = "llama-3.3-70b-versatile"
         self.groq_available = False
 
         try:
