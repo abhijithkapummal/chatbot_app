@@ -155,13 +155,60 @@ class AgenticWorkflow:
         except Exception as e:
             context["db_tables"] = f"Database error: {str(e)}"
 
-        # Get vector database information
+        # Get vector database information with similarity search
         try:
             vector_service = VectorService()
             vector_info = vector_service.get_info()
-            context["vector_db_status"] = f"{vector_info.get('total_documents', 0)} documents available" if vector_info.get('model_available', False) else "Vector DB not available"
+            print("vector_info ",vector_info)
+
+            if vector_info.get('model_available', False) and vector_info.get('total_documents', 0) > 0:
+                # Perform similarity search with user query
+                search_results = vector_service.search(query, top_k=3)
+
+                print("search_results ",search_results)
+
+                # Filter results with similarity threshold of 0.7
+                filtered_results = [result for result in search_results if result.get('score', 0) >= 0.6]
+
+                if filtered_results:
+                    # Prepare vector context with similarity search results
+                    vector_context = {
+                        "total_documents": vector_info.get('total_documents', 0),
+                        "search_results_count": len(filtered_results),
+                        "relevant_content": []
+                    }
+
+                    for result in filtered_results:
+                        vector_context["relevant_content"].append({
+                            "content": result.get('content', ''),
+                            "similarity_score": result.get('score', 0),
+                            "metadata": {k: v for k, v in result.items() if k not in ['content', 'score']}
+                        })
+
+                    context["vector_db_status"] = f"{vector_info.get('total_documents', 0)} documents available, {len(filtered_results)} relevant documents found"
+                    context["vector_search_results"] = vector_context
+                else:
+                    context["vector_db_status"] = f"{vector_info.get('total_documents', 0)} documents available, no documents meet similarity threshold (0.7)"
+                    context["vector_search_results"] = {
+                        "total_documents": vector_info.get('total_documents', 0),
+                        "search_results_count": 0,
+                        "relevant_content": []
+                    }
+            else:
+                context["vector_db_status"] = "Vector DB not available or empty"
+                context["vector_search_results"] = {
+                    "total_documents": 0,
+                    "search_results_count": 0,
+                    "relevant_content": []
+                }
+
         except Exception as e:
             context["vector_db_status"] = f"Vector DB error: {str(e)}"
+            context["vector_search_results"] = {
+                "total_documents": 0,
+                "search_results_count": 0,
+                "relevant_content": []
+            }
 
         return context
 
