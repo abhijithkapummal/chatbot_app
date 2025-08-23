@@ -78,26 +78,8 @@ Begin by inspecting the database schema.
         Determine if this query requires database operations.
         Returns confidence score based on query analysis.
         """
-        # Keywords that suggest database queries
-        db_keywords = [
-            'how many', 'count', 'total', 'sum', 'average', 'mean',
-            'show', 'list', 'find', 'search', 'get', 'retrieve',
-            'data', 'records', 'table', 'database', 'report',
-            'statistics', 'stats', 'analysis', 'breakdown',
-            'users', 'files', 'uploads', 'recent', 'latest'
-        ]
 
-        query_lower = query.lower()
-
-        # Check for database-related keywords
-        keyword_matches = sum(1 for keyword in db_keywords if keyword in query_lower)
-
-        if keyword_matches >= 2:
-            return 0.9
-        elif keyword_matches == 1:
-            return 0.6
-        else:
-            return 0.2
+        return 0.2
 
     def _inspect_database_schema(self) -> str:
         """Inspect database schema and return table/column information."""
@@ -253,10 +235,45 @@ Rules:
 - Include appropriate WHERE, GROUP BY, ORDER BY clauses as needed
 - Limit results to reasonable amounts (use LIMIT if needed)
 
+Primary Objective: Generate database queries that are resilient to data inconsistencies and user input variations, ensuring reliable results regardless of how data is stored or how users phrase their requests.
+1. Case-Insensitive Comparisons: Always use case-insensitive comparisons when filtering on text/string columns
+Use UPPER() or LOWER() functions to normalize both column values and comparison values
+
+Example: WHERE UPPER("Job Title") = UPPER('broadcast engineer')
+
+2. Flexible Pattern Matching
+Use LIKE or ILIKE operators for partial matches when users might not know exact values
+
+ILIKE is preferred in PostgreSQL as it's case-insensitive by default
+
+Include wildcard patterns (%) to handle variations in spacing, abbreviations, or partial terms
+
+Example: WHERE "Job Title" ILIKE '%broadcast%engineer%'
+
+3. Handle Common Data Variations
+Account for leading/trailing whitespace using TRIM() function
+
+Consider common abbreviations and synonyms (e.g., "Admin" vs "Administrator")
+
+Handle plural/singular forms where applicable
+
+Example: WHERE TRIM(UPPER("Department")) LIKE '%ENGINEER%'
+
+4. User-Friendly Approach
+Assume users don't know exact column values or their formatting
+
+Make queries forgiving of minor spelling variations or incomplete information
+
+Use broad matching first, then narrow down if needed
+
+Consider using SIMILAR TO or regex patterns for complex matching requirements
+
 Generate only the SQL query, no explanations:
 """
 
             sql_query = self._invoke_llm(sql_generation_prompt).strip()
+
+            print("sql_query ",sql_query)
 
             # Clean up the SQL query (remove markdown formatting if present)
             if sql_query.startswith('```sql'):
