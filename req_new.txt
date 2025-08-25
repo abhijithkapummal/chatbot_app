@@ -1,0 +1,7 @@
+# LangChain and LangGraph
+langchain>=0.1.20
+langchain-core>=0.1.53
+langchain-community>=0.0.38
+langgraph>=0.0.51
+langchain-groq>=0.1.5
+langchain-experimental>=0.0.58
